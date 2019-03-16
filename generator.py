@@ -14,10 +14,8 @@ class ConstantString(AST):
 
 	def __eq__(self, other):
 		if isinstance(other, ConstantString):
-			if other.constantString == self.constantString:
-				return True
+			return other.constantString == self.constantString
 		return False
-
 	def execute(self, string):
 		return self.constantString
 
@@ -31,8 +29,7 @@ class LinearInt(AST):
 
 	def __eq__(self, other):
 		if isinstance(other, LinearInt):
-			if other.num == self.num:
-				return True
+			return other.num == self.num
 		return False
 
 	def execute(self, string):
@@ -48,8 +45,7 @@ class FindPrefix(AST):
 
 	def __eq__(self, other):
 		if isinstance(other, FindPrefix):
-			if other.letter == self.letter:
-				return True
+			return other.letter == self.letter
 		return False
 
 	def execute(self, string):
@@ -65,8 +61,7 @@ class FindSuffix(AST):
 
 	def __eq__(self, other):
 		if isinstance(other, FindSuffix):
-			if other.letter == self.letter:
-				return True
+			return other.letter == self.letter
 		return False
 
 	def execute(self, string):
@@ -81,8 +76,7 @@ class ConcatString(AST):
 
 	def __eq__(self, other):
 		if isinstance(other, ConcatString):
-			if other.left == self.left and other.right == self.right:
-				return True
+			return other.left == self.left and other.right == self.right
 		return False
 
 	def execute(self, string):
@@ -98,8 +92,7 @@ class Substring(AST):
 
 	def __eq__(self, other):
 		if isinstance(other, Substring):
-			if other.left == self.left and other.right == self.right:
-				return True
+			return other.left == self.left and other.right == self.right
 		return False
 
 	def execute(self, string):
@@ -116,10 +109,12 @@ class ConcatVS():
 	def __str__(self):
 		leftList = []
 		for i in self.left:
-			leftList.append(str(i))
+			if i != None and i not in leftList:
+				leftList.append(str(i))
 		rightList = []
 		for j in self.right:
-			rightList.append(str(j))
+			if j != None and j not in rightList:
+				rightList.append(str(j))
 		return "Concat({" + str(leftList)+"}, {" + str(rightList) + "})"
 
 	def getOverlap(self, other):
@@ -128,13 +123,22 @@ class ConcatVS():
 
 		for i in self.left:
 			for j in other.left:
-				if i == j:
-					overlapLeft.append(i)
+				if (isinstance(i, FindPrefix) or isinstance(i, LinearInt) or isinstance(i, FindSuffix) or isinstance(i, ConstantString)\
+					or isinstance(j, FindPrefix) or isinstance(j, LinearInt) or isinstance(j, FindSuffix) or isinstance(j, ConstantString)):
+					if i == j:
+						overlapLeft.append(i)
+				else:
+					overlapLeft.append(i.getOverlap(j))
 		for i in self.right:
 			for j in other.right:
-				if i == j:
-					overlapRight.append(j)
-		return ConcatVS(overlapLeft, overlapRight)
+				if (isinstance(i, FindPrefix) or isinstance(i, LinearInt) or isinstance(i, FindSuffix) or isinstance(i, ConstantString)\
+					or isinstance(j, FindPrefix) or isinstance(j, LinearInt) or isinstance(j, FindSuffix) or isinstance(j, ConstantString)):
+					if i == j:
+						overlapRight.append(i)
+				else:
+					overlapRight.append(i.getOverlap(j))
+		if overlapLeft != [] and overlapRight != []:			
+			return ConcatVS(overlapLeft, overlapRight)
 
 	def toAST(self):
 		totalAST = []
@@ -156,25 +160,39 @@ class SubstringVS():
 	def __str__(self):
 		leftList = []
 		for i in self.left:
-			leftList.append(str(i))
+			if i != None and i not in leftList:
+				leftList.append(str(i))
 		rightList = []
 		for j in self.right:
-			rightList.append(str(j))
+			if j != None and j not in rightList:
+				rightList.append(str(j))
 		return "SubString({" + str(leftList)+"}, {" + str(rightList) + "})"
 
 	def getOverlap(self, other):
 		overlapRight = []
 		overlapLeft = [] 
-
 		for i in self.left:
 			for j in other.left:
-				if i == j:
-					overlapLeft.append(i)
+				# print('i', i, '\nj', j)
+				if (isinstance(i, FindPrefix) or isinstance(i, LinearInt) or isinstance(i, FindSuffix) or isinstance(i, ConstantString)\
+					or isinstance(j, FindPrefix) or isinstance(j, LinearInt) or isinstance(j, FindSuffix) or isinstance(j, ConstantString)):
+					if i == j:
+						# print('yes')
+						overlapLeft.append(i)
+				else:
+					overlapLeft.append(i.getOverlap(j))
+
 		for i in self.right:
 			for j in other.right:
-				if i == j:
-					overlapRight.append(j)
-		return SubstringVS(overlapLeft, overlapRight)
+				# print('ri', i, '\nrj', j)
+				if (isinstance(i, FindPrefix) or isinstance(i, LinearInt) or isinstance(i, FindSuffix) or isinstance(i, ConstantString)\
+					or isinstance(j, FindPrefix) or isinstance(j, LinearInt) or isinstance(j, FindSuffix) or isinstance(j, ConstantString)):
+					if i == j:
+						overlapRight.append(i)
+				else:
+					overlapRight.append(i.getOverlap(j))
+		if overlapLeft != [] and overlapRight != []:			
+			return SubstringVS(overlapLeft, overlapRight)
 
 	def toAST(self):
 		totalAST = []
@@ -266,8 +284,13 @@ def generateVS(input, output):
 	for i in range(2, len(output)):
 		left = output[:i]
 		right = output[i:]
+		# print(ConcatVS(generateVS(input, left), generateVS(input, right)))
 		totalVS.append(ConcatVS(generateVS(input, left), generateVS(input, right)))
 		totalVS.append(SubstringVS(generateVS(input, left), generateVS(input, right)))
+	# totalVS.append(SubstringVS(generateVSConcat(input, output), generateVSSubstring(input, output)))
+	# totalVS.append(SubstringVS(generateVSSubstring(input, output), generateVSConcat(input, output)))
+	# totalVS.append(ConcatVS(generateVSConcat(input, output), generateVSSubstring(input, output)))
+	# totalVS.append(ConcatVS(generateVSSubstring(input, output), generateVSConcat(input, output)))
 	totalVS += generateVSConstStr(input, output)
 	totalVS += generateVSConcat(input, output)
 	totalVS += generateVSSubstring(input, output)
@@ -279,17 +302,19 @@ def generateOverlapPrograms(inputs, outputs):
 	"""
 	list1 = generateVS(inputs[0], outputs[0])
 	list2 = generateVS(inputs[1], outputs[1])
+	# print(list2[2])
 	final = []
 	compare = []
 	for indx, ele in enumerate(list1):
 		for index2, ele2 in enumerate(list2):
-			if isinstance(ele, ConstantString):
-				if ele == ele2:
-					final.append(ele)
-			elif (isinstance(ele, ConcatVS) or isinstance(ele, SubstringVS)) and (isinstance(ele2, ConcatVS) or isinstance(ele2, SubstringVS)):
-				curList = ele.getOverlap(ele2)
-				if (curList.left != [] and curList.right != []):
-					final.append(curList)
+			if indx == 2 and index2 == 2:
+				if isinstance(ele, ConstantString):
+					if ele == ele2:
+						final.append(ele)
+				elif (isinstance(ele, ConcatVS) or isinstance(ele, SubstringVS)) and (isinstance(ele2, ConcatVS) or isinstance(ele2, SubstringVS)):
+					curList = ele.getOverlap(ele2)
+					if (curList.left != [] and curList.right != []):
+						final.append(curList)
 	compare = final[:]
 
 	for index in range(2, len(inputs)):
@@ -316,8 +341,9 @@ if __name__ == '__main__':
 	# print(ConcatVS(, generateVSConcat('abc', 'bc')))
 	# print(FindPrefix('a') == FindPrefix('a'))
 	# print(Substring(FindPrefix('a'), FindSuffix('b')) == Substring(FindPrefix('a'), FindSuffix('b')))
-	for i in generateOverlapPrograms(["Angel H", "Jimmy K", "Jeana C"], ['Angel', "Jimmy", "Jeana"]):
+	for i in generateOverlapPrograms(["Angel H", "Jimmy K"], ['AngHel', "JimKmy"]):
 		print(i)
+
 
 	# print(FindPrefix('a').execute("my name"))
 	# left = [Substring(FindPrefix('a'), FindSuffix('a')), ConstantString("a")]
