@@ -354,15 +354,14 @@ def generateOverlapPrograms(inputs, outputs):
 
 
 if __name__ == '__main__':
+	pass
 	# generateVSConcat('abc', 'bc')
 	# print(ConcatVS(, generateVSConcat('abc', 'bc')))
 	# print(FindPrefix('a') == FindPrefix('a'))
 	# print(Substring(FindPrefix('a'), FindSuffix('b')) == Substring(FindPrefix('a'), FindSuffix('b')))
-	# for i in generateOverlapPrograms(["Angel H", "Jimmy K", "Jeana C"], ['AngHel', "JimKmy", "JeaCna"]):
+	# for i in generateOverlapPrograms(["Angel H", "Jimmy K", "Jean C"], ['AngH', "JimK", "JeaC"]):
 	# 	print(i)
-	for i in generateOverlapPrograms(["ab C", "de F"], ['aCb', "dFe"]):
-		print(i)
-	# for i in generateVS("ac b", "abc"):
+	# for i in generateOverlapPrograms(["ab C", "de F", "ghe P"], ['aCb', "dFe", "gPhe"]):
 	# 	print(i)
 	# for i in generateVSSubstring("ac b", "abc"):
 	# 	print(i)
