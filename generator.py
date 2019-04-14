@@ -16,6 +16,7 @@ class ConstantString(AST):
 		if isinstance(other, ConstantString):
 			return other.constantString == self.constantString
 		return False
+
 	def execute(self, string):
 		return self.constantString
 
@@ -96,7 +97,7 @@ class Substring(AST):
 		return False
 
 	def execute(self, string):
-		return string[self.left.execute(string):self.right.execute(string)]
+		return string[self.left.execute(string):self.right.execute(string)+1]
 
 class ConcatVS():
 	def __init__(self, left, right):
@@ -354,13 +355,19 @@ def generateOverlapPrograms(inputs, outputs):
 
 
 if __name__ == '__main__':
-	pass
 	# generateVSConcat('abc', 'bc')
 	# print(ConcatVS(, generateVSConcat('abc', 'bc')))
 	# print(FindPrefix('a') == FindPrefix('a'))
 	# print(Substring(FindPrefix('a'), FindSuffix('b')) == Substring(FindPrefix('a'), FindSuffix('b')))
-	# for i in generateOverlapPrograms(["Angel H", "Jimmy K", "Jean C"], ['AngH', "JimK", "JeaC"]):
-	# 	print(i)
+	x = generateOverlapPrograms(["Angel H", "Jimmy K", "Jeana C"], ['A. H', "J. K", "J. C"])
+	# print(program.execute("James G"))
+	# print(x)
+	program = x[-1]
+	print(program.toAST())
+	for i in program.toAST():
+		print(i)
+		print(i.execute("James G"))
+
 	# for i in generateOverlapPrograms(["ab C", "de F", "ghe P"], ['aCb', "dFe", "gPhe"]):
 	# 	print(i)
 	# for i in generateVSSubstring("ac b", "abc"):
