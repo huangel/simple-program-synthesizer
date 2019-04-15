@@ -26,13 +26,15 @@ class DAG():
 			if self.delta[start][i] not in path:
 				newpaths = self.find_all_paths_bw(self.delta[start][i], end, path+[i])
 				for newpath in newpaths:
-					paths.append(newpath)
+					if len(newpath) == max(self.accept)+2:
+						paths.append(newpath)
 		return paths
 
 	def getUniquePaths(self):
 		hashSet = set()
 		for li in self.find_all_paths_bw(self.start, self.accept):
-			hashSet.add(tuple(li[1::2]))
+			tup = tuple(li[1::2])
+			hashSet.add(tup)
 		return hashSet
 
 	def copy(self):
@@ -42,7 +44,6 @@ class DAG():
 def intersect(D1, D2):
 	start_node = (D1.start, D2.start)
 	accept_node = (D1.accept, D2.accept)
-	# all_alphabets = D1.alphabet.union(D2.alphabet)
 	new_delta = {}
 	all_states = set()
 	for D1key in D1.delta:

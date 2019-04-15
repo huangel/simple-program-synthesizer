@@ -351,27 +351,24 @@ def getDelta(states, input, output):
 				for program in programs:
 					delta[state][program] = num
 		else:
-			delta[state] = {ConstantString(""):state}
-	# for key in delta.keys():
-	# 	for i in delta[key].keys():
-	# 		print(key, i, delta[key][i])
+			delta[state] = {}
 	return delta
 
 
 if __name__ == '__main__':
 	one = getPrograms("Rob Miller", "R")
 	two = getPrograms("Bob Huanga", "B")
-	for key in one.delta.keys():
-		for i in one.delta[key].keys():
-			print(key, i, one.delta[key][i])
+	# for key in one.delta.keys():
+	# 	for i in one.delta[key].keys():
+	# 		print(key, i, one.delta[key][i])
 
-	for key in two.delta.keys():
-		for i in two.delta[key].keys():
-			print(key, i, two.delta[key][i])
+	# for key in two.delta.keys():
+	# 	for i in two.delta[key].keys():
+	# 		print(key, i, two.delta[key][i])
 	# print([i for i in one.delta.keys()])
-	print(one.getUniquePaths())
 	for path in intersect(one, two).getUniquePaths():
-		print([str(ele) for ele in path])
+		check = [str(ele) for ele in path]
+		print(check, len(check))
 
 
 
