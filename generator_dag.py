@@ -62,7 +62,6 @@ class FindSuffix(AST):
 			return other.letter == self.letter
 		return False
 
-
 	def __key(self):
 		return (self.letter,)
 		
@@ -77,13 +76,12 @@ class ConcatString(AST):
 		self.left = left
 		self.right = right
 	def __str__(self):
-		return "Concat(" + str(self.left) + str(self.right) + ")"
+		return "Concat(" + str(self.left) + ", " + str(self.right) + ")"
 
 	def __eq__(self, other):
 		if isinstance(other, ConcatString):
 			return other.left == self.left and other.right == self.right
 		return False
-
 
 	def __key(self):
 		return tuple(self.left) + tuple(self.right)
@@ -156,18 +154,26 @@ class ConcatVS():
 		"""
 		left / right ==> list/set
 		"""
+		if not isinstance(left, list):
+			left = [left]
+		if not isinstance(right, list):
+			right = [right]
 		self.left = left
 		self.right = right
 
 	def __str__(self):
 		leftList = []
-		for i in self.left:
-			# if i != None and i not in leftList and i != []:
-			leftList.append(str(i))
+		if not isinstance(self.left, list):
+			leftList = [self.left]
+		else:
+			for i in self.left:
+				leftList.append(str(i))
 		rightList = []
-		for j in self.right:
-			# if j != None and j not in rightList and j != []:
-			rightList.append(str(j))
+		if not isinstance(self.right, list):
+			rightList = [self.right]
+		else:
+			for i in self.right:
+				rightList.append(str(i))
 		return "Concat({" + str(leftList)+"}, {" + str(rightList) + "})"
 
 	def __eq__(self, other):
@@ -210,6 +216,7 @@ class ConcatVS():
 
 	def toAST(self):
 		totalAST = []
+
 		for ele1 in self.left:
 			for ele2 in self.right:
 				for i in ele1.toAST():
@@ -354,38 +361,41 @@ def getDelta(states, input, output):
 			delta[state] = {}
 	return delta
 
+def getConcat(newList):
+	if len(newList) == 2:
+		return ConcatVS(newList[0], newList[1])
+	else:
+		return ConcatVS(newList[0], getConcat(newList[1:]))
 
+def generatePrograms(input, output):
+	dag1 = getPrograms(input[0], output[0])
+	dag2 = getPrograms(input[1], output[1])
+	inter = intersect(dag1, dag2)
+	for index in range(2, len(input)):
+		inter = intersect(inter, getPrograms(input[index], output[index]))
+	paths = inter.getUniquePaths()
+	output = []
+	for path in paths:
+		output.append(getConcat(path).toAST()[0])
+	return output
 if __name__ == '__main__':
-	one = getPrograms("Rob Miller", "R")
-	two = getPrograms("Bob Huanga", "B")
-	# for key in one.delta.keys():
-	# 	for i in one.delta[key].keys():
-	# 		print(key, i, one.delta[key][i])
-
-	# for key in two.delta.keys():
-	# 	for i in two.delta[key].keys():
-	# 		print(key, i, two.delta[key][i])
-	# print([i for i in one.delta.keys()])
-	for path in intersect(one, two).getUniquePaths():
-		check = [str(ele) for ele in path]
-		print(check, len(check))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	path = generatePrograms(["Rob M", "Bob H", "Aba A", "Jon C"], ["Mr. Rob", "Mr. Bob", "Mr. Aba", "Mr. Jon"])
+	for i in path:
+		print(i.execute("Jos G"))
+	# one = getPrograms("Rob Miller", "Mr. Rob")
+	# two = getPrograms("Bob Huanga", "Mr. Bob")
+	# three = getPrograms("Aba aabcd", "Mr. Aba")
+	# inter = intersect(one, two)
+	# aaa = intersect(inter, three)
+	# paths = aaa.getUniquePaths()
+	# # paths.sort(key=lambda x: len(x))
+	# # print([i for i in aaa.delta.keys()])
+	# for path in paths:
+	# 	print(getConcat(path))
+	# 	print(getConcat(path).toAST()[0].execute("Jon Giller"))
+		# print(getConcat(path).toAST().execute("Jon Giller"))
+		# check = [str(ele) for ele in path]
+		# print(check, len(check))
 
 
 
